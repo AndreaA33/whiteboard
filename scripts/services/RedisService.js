@@ -4,9 +4,9 @@ import config from '../config/config.js';
 class RedisService {
     constructor() {
         this.redis = new Redis({
-            host: process.env.REDIS_HOST || 'localhost',
+            host: 'main-elasticache-redis-1.h5vflu.ng.0001.euw2.cache.amazonaws.com:6379',
             port: 6379,
-            tls: process.env.REDIS_TLS === 'true' ? {} : null,
+            tls: {},
             retryStrategy: (times) => {
                 const delay = Math.min(times * 50, 2000);
                 return delay;

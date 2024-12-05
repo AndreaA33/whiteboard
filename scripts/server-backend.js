@@ -17,7 +17,19 @@ import { setupSocketHandlers } from "./socket/handlers.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export default function startBackendServer(port) {
+export default async function startBackendServer(port) {
+
+    try {
+        const isConnected = await RedisService.isConnected();
+        if (!isConnected) {
+            console.error('Failed to connect to Redis. Please check your Redis configuration.');
+            process.exit(1);
+        }
+    } catch (err) {
+        console.error('Redis connection error:', err);
+        process.exit(1);
+    }
+
     const window = new JSDOM("").window;
     const DOMPurify = createDOMPurify(window);
 
