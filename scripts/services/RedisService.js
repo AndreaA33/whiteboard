@@ -74,6 +74,7 @@ class RedisService {
             console.error('Error publishing drawing update:', err);
             return false;
         }
+
     }
 
     subscribeToDrawingUpdates(whiteboardId, callback) {

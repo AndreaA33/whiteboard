@@ -7,12 +7,13 @@ import createDOMPurify from "dompurify";
 import { JSDOM } from "jsdom";
 
 import config from "./config/config.js";
-import { WhiteboardInfoBackendService } from "./services/WhiteboardInfoBackendService.js";
+import WBInfoBackendService from "./services/WhiteboardInfoBackendService.js";
+const WhiteboardInfoBackendService = new WBInfoBackendService();
 import healthRoutes from "./routes/health.js";
 import whiteboardRoutes from "./routes/whiteboard.js";
 import uploadRoutes from "./routes/upload.js";
 import drawRoutes from "./routes/draw.js";
-import { setupSocketHandlers } from "./socket/handlers.js";
+import { socketHandlers } from "./socket/handlers.js";
 import RedisService from "./services/RedisService.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -60,7 +61,7 @@ export default async function startBackendServer(port) {
 
     // Socket.io setup
     WhiteboardInfoBackendService.start(io);
-    setupSocketHandlers(io, DOMPurify);
+    socketHandlers(io, DOMPurify);
 
     // Graceful shutdown
     process.on('SIGTERM', async () => {
