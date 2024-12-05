@@ -37,7 +37,28 @@ export default async function startBackendServer(port) {
 
     const app = express();
     const server = http.Server(app);
-    const io = new Server(server, { path: "/ws-api" });
+    const io = new Server(server, {
+        path: "/ws-api",
+        cors: {
+            origin: true,
+            methods: ["GET", "POST"],
+            credentials: true
+        },
+        transports: ['websocket', 'polling'],
+        pingInterval: 20000,
+        pingTimeout: 5000
+    });
+
+    const corsOptions = {
+        origin: true, // This allows any origin
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'x-access-token'],
+        credentials: true,
+        maxAge: 86400 // Cache preflight requests for 24 hours
+    };
+
+    // Add cors middleware
+    app.use(cors(corsOptions));
 
     // Middleware to make accessToken available
     app.use((req, res, next) => {
@@ -58,6 +79,16 @@ export default async function startBackendServer(port) {
     app.use('/api', whiteboardRoutes);
     app.use('/api', uploadRoutes);
     app.use('/api', drawRoutes);
+
+    // Add this fallback route for SPA
+    app.get('*', (req, res) => {
+        // Don't serve index.html for API or asset requests
+        if (req.path.startsWith('/api') || req.path.match(/\.(jpg|jpeg|png|gif|ico|css|js|svg)$/i)) {
+            res.status(404).send('Not found');
+            return;
+        }
+        res.sendFile(path.join(__dirname, '..', 'dist', 'index.html'));
+    });
 
     // Socket.io setup
     WhiteboardInfoBackendService.start(io);
