@@ -8,7 +8,7 @@ import { JSDOM } from "jsdom";
 
 import config from "./config/config.js";
 import { WhiteboardInfoBackendService } from "./services/WhiteboardInfoBackendService.js";
-import healthRoutes from "./routes/health.js";
+// Removed the healthRoutes import
 import whiteboardRoutes from "./routes/whiteboard.js";
 import uploadRoutes from "./routes/upload.js";
 import drawRoutes from "./routes/draw.js";
@@ -51,8 +51,7 @@ export default async function startBackendServer(port) {
     app.use(express.static(path.join(__dirname, "..", "dist")));
     app.use("/uploads", express.static(path.join(__dirname, "..", "public", "uploads")));
 
-    // Routes
-    app.use('/api', healthRoutes);
+    // Removed the health route, no longer use healthRoutes
     app.use('/api', whiteboardRoutes);
     app.use('/api', uploadRoutes);
     app.use('/api', drawRoutes);
