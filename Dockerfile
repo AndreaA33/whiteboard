@@ -9,7 +9,7 @@ COPY package*.json ./
 
 # Install dependencies with increased memory limit
 ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN npm ci --only=production
+RUN npm ci
 
 # Copy source files
 COPY src ./src
@@ -29,7 +29,7 @@ WORKDIR /opt/app
 
 # Copy package files and install production dependencies
 COPY package*.json config.default.yml ./
-RUN npm ci --only=production
+RUN npm ci --only=production --legacy-peer-deps
 
 # Copy built files from build stage
 COPY --from=build /opt/app/dist ./dist
