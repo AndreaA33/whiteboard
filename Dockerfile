@@ -1,37 +1,42 @@
-FROM node:18 as base
+# Build stage
+FROM node:20-slim AS build
 
 # Create app directory
-RUN mkdir -p /opt/app
 WORKDIR /opt/app
 
-# Install app dependencies
-COPY ./package.json package-lock.json ./
-RUN npm ci
+# Copy package files
+COPY package*.json ./
 
-# Bundle frontend
+# Install dependencies with increased memory limit
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+RUN npm ci --only=production
+
+# Copy source files
 COPY src ./src
 COPY assets ./assets
 COPY config ./config
+COPY scripts ./scripts
+
+# Build frontend
 RUN npm run build
 
-#####################
-# Final image
-#####################
-
-FROM node:18-alpine
-ENV NODE_ENV=prod
-
-MAINTAINER cracker0dks
+# Production stage
+FROM node:20-slim AS production
+ENV NODE_ENV=production
 
 # Create app directory
-RUN mkdir -p /opt/app
 WORKDIR /opt/app
 
-COPY ./package.json ./package-lock.json config.default.yml ./
-RUN npm ci --only=prod
+# Copy package files and install production dependencies
+COPY package*.json config.default.yml ./
+RUN npm ci --only=production
 
+# Copy built files from build stage
+COPY --from=build /opt/app/dist ./dist
 COPY scripts ./scripts
-COPY --from=base /opt/app/dist ./dist
 
+# Expose port
 EXPOSE 8080
+
+# Start command
 ENTRYPOINT ["npm", "run", "start"]
