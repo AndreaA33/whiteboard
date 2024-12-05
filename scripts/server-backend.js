@@ -13,7 +13,7 @@ import healthRoutes from "./routes/health.js";
 import whiteboardRoutes from "./routes/whiteboard.js";
 import uploadRoutes from "./routes/upload.js";
 import drawRoutes from "./routes/draw.js";
-import { socketHandlers } from "./socket/handlers.js";
+import { socketHandlers } from "./socket/handlers.js"; // Ensure you're importing the object
 import RedisService from "./services/RedisService.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -61,7 +61,22 @@ export default async function startBackendServer(port) {
 
     // Socket.io setup
     WhiteboardInfoBackendService.start(io);
-    socketHandlers(io, DOMPurify);
+
+    // Register socket event handlers individually
+    io.on("connection", (socket) => {
+        // Call individual handler methods, passing the appropriate arguments
+        socket.on("drawing", (data) => {
+            socketHandlers.handleDrawing(socket, data); // Call the handleDrawing method
+        });
+
+        socket.on("joinRoom", (roomId) => {
+            socketHandlers.handleJoinRoom(socket, roomId); // Call the handleJoinRoom method
+        });
+
+        socket.on("leaveRoom", (roomId) => {
+            socketHandlers.handleLeaveRoom(socket, roomId); // Call the handleLeaveRoom method
+        });
+    });
 
     // Graceful shutdown
     process.on('SIGTERM', async () => {
