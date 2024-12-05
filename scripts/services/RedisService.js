@@ -4,15 +4,16 @@ import config from '../config/config.js';
 class RedisService {
     constructor() {
         this.redis = new Redis({
-            host: 'main-elasticache-redis-1.h5vflu.ng.0001.euw2.cache.amazonaws.com:6379',
-            port: 6379,
-            tls: {},
+            host: 'main-elasticache-redis-1.h5vflu.ng.0001.euw2.cache.amazonaws.com', // Removed port from host
+            port: 6379, // Port should be separate
+            tls: {}, // Configure TLS only if needed; remove this line if not using TLS
             retryStrategy: (times) => {
-                const delay = Math.min(times * 50, 2000);
+                const delay = Math.min(times * 50, 2000); // Exponential backoff
                 return delay;
             }
         });
 
+        // Redis connection event handlers
         this.redis.on('error', (err) => {
             console.error('Redis Error:', err);
         });
@@ -22,11 +23,22 @@ class RedisService {
         });
     }
 
+    // New isConnected method
+    async isConnected() {
+        try {
+            await this.redis.ping();
+            return true;
+        } catch (err) {
+            console.error('Redis connection failed:', err);
+            return false;
+        }
+    }
+
+    // Save whiteboard data with expiry
     async saveWhiteboardData(whiteboardId, data) {
         try {
             await this.redis.set(`whiteboard:${whiteboardId}`, JSON.stringify(data));
-            // Set expiry to 24 hours
-            await this.redis.expire(`whiteboard:${whiteboardId}`, 24 * 60 * 60);
+            await this.redis.expire(`whiteboard:${whiteboardId}`, 24 * 60 * 60); // 24 hours expiry
             return true;
         } catch (err) {
             console.error('Error saving whiteboard data:', err);
@@ -34,6 +46,7 @@ class RedisService {
         }
     }
 
+    // Retrieve whiteboard data
     async getWhiteboardData(whiteboardId) {
         try {
             const data = await this.redis.get(`whiteboard:${whiteboardId}`);
@@ -44,6 +57,7 @@ class RedisService {
         }
     }
 
+    // Add a drawing to the whiteboard
     async addDrawingToWhiteboard(whiteboardId, drawingData) {
         try {
             const currentData = await this.getWhiteboardData(whiteboardId);
@@ -56,6 +70,7 @@ class RedisService {
         }
     }
 
+    // Clear whiteboard data
     async clearWhiteboard(whiteboardId) {
         try {
             await this.redis.del(`whiteboard:${whiteboardId}`);
@@ -66,6 +81,7 @@ class RedisService {
         }
     }
 
+    // Publish updates to subscribers
     async publishDrawingUpdate(whiteboardId, drawingData) {
         try {
             await this.redis.publish(`whiteboard:${whiteboardId}:updates`, JSON.stringify(drawingData));
@@ -74,15 +90,14 @@ class RedisService {
             console.error('Error publishing drawing update:', err);
             return false;
         }
-
     }
 
+    // Subscribe to drawing updates
     subscribeToDrawingUpdates(whiteboardId, callback) {
-        const subscriber = this.redis.duplicate();
+        const subscriber = this.redis.duplicate(); // Create a separate connection for subscription
         subscriber.subscribe(`whiteboard:${whiteboardId}:updates`, (err) => {
             if (err) {
                 console.error('Error subscribing to updates:', err);
-                return;
             }
         });
 
@@ -95,7 +110,7 @@ class RedisService {
             }
         });
 
-        return subscriber;
+        return subscriber; // Return subscriber to allow unsubscribing later if needed
     }
 }
 
