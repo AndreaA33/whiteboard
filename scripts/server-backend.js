@@ -5,6 +5,7 @@ import { Server } from "socket.io";
 import { fileURLToPath } from "url";
 import createDOMPurify from "dompurify";
 import { JSDOM } from "jsdom";
+import cors from 'cors';
 
 import config from "./config/config.js";
 import WBInfoBackendService from "./services/WhiteboardInfoBackendService.js";
