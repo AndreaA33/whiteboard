@@ -6,7 +6,24 @@ services:
     ports:
       - "8080:8080/tcp"
     command: --config=./config.default.yml
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=your_redis_password
     volumes:
-      - ./data/uploads:/opt/app/public/uploads"
+      - ./data/uploads:/opt/app/public/uploads
       - ./data/config.yml:/opt/app/config.default.yml:ro
-      - ./data/savedBoards:/opt/app/savedBoards"
+      - ./data/savedBoards:/opt/app/savedBoards
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    command: redis-server --requirepass your_redis_password
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
