@@ -8,17 +8,18 @@ import { JSDOM } from "jsdom";
 
 import config from "./config/config.js";
 import { WhiteboardInfoBackendService } from "./services/WhiteboardInfoBackendService.js";
-// Removed the healthRoutes import
+import healthRoutes from "./routes/health.js";
 import whiteboardRoutes from "./routes/whiteboard.js";
 import uploadRoutes from "./routes/upload.js";
 import drawRoutes from "./routes/draw.js";
 import { setupSocketHandlers } from "./socket/handlers.js";
+import RedisService from "./services/RedisService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default async function startBackendServer(port) {
-
+    // Check Redis connection before starting server
     try {
         const isConnected = await RedisService.isConnected();
         if (!isConnected) {
@@ -51,7 +52,8 @@ export default async function startBackendServer(port) {
     app.use(express.static(path.join(__dirname, "..", "dist")));
     app.use("/uploads", express.static(path.join(__dirname, "..", "public", "uploads")));
 
-    // Removed the health route, no longer use healthRoutes
+    // Routes
+    app.use('/api', healthRoutes);
     app.use('/api', whiteboardRoutes);
     app.use('/api', uploadRoutes);
     app.use('/api', drawRoutes);
@@ -59,6 +61,16 @@ export default async function startBackendServer(port) {
     // Socket.io setup
     WhiteboardInfoBackendService.start(io);
     setupSocketHandlers(io, DOMPurify);
+
+    // Graceful shutdown
+    process.on('SIGTERM', async () => {
+        console.log('SIGTERM received. Shutting down gracefully...');
+        await RedisService.cleanup();
+        server.close(() => {
+            console.log('Server closed');
+            process.exit(0);
+        });
+    });
 
     // Start server
     server.listen(port, () => {
