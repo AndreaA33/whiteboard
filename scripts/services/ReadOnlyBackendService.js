@@ -65,7 +65,6 @@ export default class ReadOnlyBackendService {
      * @return {boolean}
      */
     isReadOnly(whiteboardId) {
-        this.init(whiteboardId);
         return this._readOnlyIdToId.has(whiteboardId);
     }
 }

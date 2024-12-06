@@ -37,4 +37,16 @@ router.get('/whiteboard/:id', async (req, res) => {
     }
 });
 
+router.get('/isReadOnly/:id', async (req, res) => {
+    const whiteboardId = req.params.id;
+    const isReadOnly = ReadOnlyBackendService.isReadOnly(whiteboardId);
+    res.json({ isReadOnly });
+});
+
+router.get('/getEditableId/:id', async (req, res) => {
+    const readOnlyId = req.params.id;
+    const editableId = ReadOnlyBackendService.getIdFromReadOnlyId(readOnlyId);
+    res.json({ editableId });
+});
+
 export default router;
