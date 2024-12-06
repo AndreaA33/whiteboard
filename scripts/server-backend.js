@@ -65,6 +65,7 @@ export default async function startBackendServer(port) {
     app.use((req, res, next) => {
         req.accessToken = config.backend.accessToken;
         req.io = io;
+        console.log(`${req.method} ${req.url}`);
         next();
     });
 
@@ -96,6 +97,12 @@ export default async function startBackendServer(port) {
 
     // Register socket event handlers individually
     io.on("connection", (socket) => {
+        console.log('New connection:', socket.id);
+
+        socket.onAny((event, ...args) => {
+            console.log('Socket event:', event, args);
+        });
+
         // Call individual handler methods, passing the appropriate arguments
         socket.on("drawing", (data) => {
             socketHandlers.handleDrawing(socket, data); // Call the handleDrawing method

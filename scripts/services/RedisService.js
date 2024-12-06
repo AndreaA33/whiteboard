@@ -112,6 +112,50 @@ class RedisService {
 
         return subscriber; // Return subscriber to allow unsubscribing later if needed
     }
+
+    // Get data with key
+    async get(key) {
+        try {
+            const data = await this.redis.get(key);
+            return data;
+        } catch (err) {
+            console.error('Error getting data from Redis:', err);
+            return null;
+        }
+    }
+
+    // Set data with key
+    async set(key, value) {
+        try {
+            await this.redis.set(key, value);
+            return true;
+        } catch (err) {
+            console.error('Error setting data in Redis:', err);
+            return false;
+        }
+    }
+
+    // Add to list
+    async rpush(key, value) {
+        try {
+            await this.redis.rpush(key, value);
+            return true;
+        } catch (err) {
+            console.error('Error pushing to list in Redis:', err);
+            return false;
+        }
+    }
+
+    // Get list range
+    async lrange(key, start, end) {
+        try {
+            const data = await this.redis.lrange(key, start, end);
+            return data;
+        } catch (err) {
+            console.error('Error getting list range from Redis:', err);
+            return [];
+        }
+    }
 }
 
 export default new RedisService();

@@ -1072,4 +1072,30 @@ function initWhiteboard() {
     });
 }
 
+async function loadWhiteboardConfig(wid) {
+    try {
+        const response = await fetch(`/api/whiteboard/${wid}`);
+        const config = await response.json();
+        console.log('Whiteboard config loaded:', config);
+
+        // Initialize whiteboard with config
+        initializeWhiteboard(config);
+    } catch (error) {
+        console.error('Failed to load whiteboard configuration:', error);
+    }
+}
+
+// Call this function when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    // Get whiteboard ID from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const whiteboardId = urlParams.get('whiteboardid');
+    
+    if (whiteboardId) {
+        loadWhiteboardConfig(whiteboardId);
+    } else {
+        console.error('No whiteboard ID provided');
+    }
+});
+
 export default main;
