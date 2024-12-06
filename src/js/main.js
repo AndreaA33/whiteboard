@@ -1074,15 +1074,28 @@ function initWhiteboard() {
 
 async function loadWhiteboardConfig(wid) {
     try {
+        console.log('Fetching whiteboard config for:', wid); // Debug log
         const response = await fetch(`/api/whiteboard/${wid}`);
+        
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
+        
         const config = await response.json();
         console.log('Whiteboard config loaded:', config);
 
-        // Initialize whiteboard with config
-        initializeWhiteboard(config);
+        // Make sure initWhiteboard is defined and available
+        if (typeof initWhiteboard === 'function') {
+            initWhiteboard(config);
+        } else {
+            console.error('initWhiteboard function is not defined');
+            // Fallback to basic initialization if needed
+            whiteboard.loadWhiteboard("#whiteboardContainer", {
+                whiteboardId: wid,
+                username: myUsername,
+                backgroundGridUrl: "./images/" + ConfigService.backgroundGridImage,
+            });
+        }
     } catch (error) {
         console.error('Failed to load whiteboard configuration:', error);
         // Initialize with default config if loading fails
@@ -1097,21 +1110,26 @@ async function loadWhiteboardConfig(wid) {
                 drawBackgroundGrid: false
             }
         };
-        initializeWhiteboard(defaultConfig);
+        
+        if (typeof initWhiteboard === 'function') {
+            initWhiteboard(defaultConfig);
+        } else {
+            console.error('initWhiteboard function is not defined');
+            // Fallback to basic initialization
+            whiteboard.loadWhiteboard("#whiteboardContainer", {
+                whiteboardId: wid,
+                username: myUsername,
+                backgroundGridUrl: "./images/" + ConfigService.backgroundGridImage,
+            });
+        }
     }
 }
 
-// Call this function when the page loads
+// Make sure this function is called when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    // Get whiteboard ID from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
-    const whiteboardId = urlParams.get('whiteboardid');
-    
-    if (whiteboardId) {
-        loadWhiteboardConfig(whiteboardId);
-    } else {
-        console.error('No whiteboard ID provided');
-    }
+    const whiteboardId = urlParams.get('whiteboardid') || 'myNewWhiteboard';
+    loadWhiteboardConfig(whiteboardId);
 });
 
 export default main;

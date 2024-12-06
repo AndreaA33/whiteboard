@@ -3,13 +3,15 @@ import RedisService from '../services/RedisService.js';
 
 const router = express.Router();
 
-router.get('/api/whiteboard/:id', async (req, res) => {
+router.get('/whiteboard/:id', async (req, res) => {
     try {
         const whiteboardId = req.params.id;
+        console.log('Fetching whiteboard:', whiteboardId);
+        
         let whiteboardData = await RedisService.get(`whiteboard:${whiteboardId}`);
         
         if (!whiteboardData) {
-            // Initialize new whiteboard with default configuration
+            console.log('Creating new whiteboard configuration');
             const defaultConfig = {
                 elements: [],
                 background: '#ffffff',
@@ -26,7 +28,9 @@ router.get('/api/whiteboard/:id', async (req, res) => {
             whiteboardData = JSON.stringify(defaultConfig);
         }
 
-        res.json(JSON.parse(whiteboardData));
+        const parsedData = JSON.parse(whiteboardData);
+        console.log('Sending whiteboard data:', parsedData);
+        res.json(parsedData);
     } catch (error) {
         console.error('Error getting whiteboard configuration:', error);
         res.status(500).json({ error: 'Failed to load whiteboard configuration' });
