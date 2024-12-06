@@ -4,9 +4,8 @@ import config from '../config/config.js';
 class RedisService {
     constructor() {
         this.redis = new Redis({
-            host: 'main-elasticache-redis-1.h5vflu.ng.0001.euw2.cache.amazonaws.com', // ElastiCache endpoint without port included in host
+            host: 'redis-elasticache.h5vflu.ng.0001.euw2.cache.amazonaws.com', // ElastiCache endpoint without port included in host
             port: 6379, // Default port for Redis (non-SSL)
-            tls: { rejectUnauthorized: false },
             retryStrategy: (times) => {
                 const delay = Math.min(times * 50, 2000); // Exponential backoff
                 return delay;
