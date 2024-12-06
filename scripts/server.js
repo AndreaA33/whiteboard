@@ -1,5 +1,7 @@
 import { getArgs } from "./utils.js";
 import startBackendServer from "./server-backend.js";
+import express from 'express';
+import whiteboardRoutes from './routes/whiteboard.js';
 
 const SERVER_MODES = {
     PRODUCTION: 1,
@@ -31,3 +33,11 @@ if (server_mode === SERVER_MODES.DEVELOPMENT) {
     console.info("Starting server in production mode.");
     startBackendServer(process.env.PORT || 8080);
 }
+
+const app = express();
+
+// ... other middleware and configurations ...
+
+app.use('/', whiteboardRoutes);
+
+// ... rest of your server code ...

@@ -1,31 +1,35 @@
 import express from 'express';
-import s_whiteboard from '../s_whiteboard.js';
+import RedisService from '../services/RedisService.js';
+
 const router = express.Router();
 
-/**
- * @api {get} /api/loadwhiteboard Load whiteboard data
- * @apiName LoadWhiteboard
- * @apiGroup Whiteboard
- * @apiVersion 1.0.0
- * 
- * @apiParam {String} wid Whiteboard ID
- * @apiParam {String} at Access token
- * 
- * @apiSuccess {Object[]} data Array of whiteboard elements
- */
-router.get('/loadwhiteboard', async (req, res) => {
-    const { wid, at } = req.query;
-    
-    if (req.accessToken && at !== req.accessToken) {
-        return res.status(401).json({ error: 'Invalid access token' });
-    }
-
+router.get('/api/whiteboard/:id', async (req, res) => {
     try {
-        const data = await s_whiteboard.loadStoredData(wid);
-        res.json(data);
-    } catch (err) {
-        console.error('Error loading whiteboard:', err);
-        res.status(500).json({ error: 'Failed to load whiteboard data' });
+        const whiteboardId = req.params.id;
+        let whiteboardData = await RedisService.get(`whiteboard:${whiteboardId}`);
+        
+        if (!whiteboardData) {
+            // Initialize new whiteboard with default configuration
+            const defaultConfig = {
+                elements: [],
+                background: '#ffffff',
+                settings: {
+                    readOnly: false,
+                    displayInfo: false,
+                    showSmallestScreenIndicator: true,
+                    imageDownloadFormat: 'png',
+                    drawBackgroundGrid: false
+                }
+            };
+            
+            await RedisService.set(`whiteboard:${whiteboardId}`, JSON.stringify(defaultConfig));
+            whiteboardData = JSON.stringify(defaultConfig);
+        }
+
+        res.json(JSON.parse(whiteboardData));
+    } catch (error) {
+        console.error('Error getting whiteboard configuration:', error);
+        res.status(500).json({ error: 'Failed to load whiteboard configuration' });
     }
 });
 

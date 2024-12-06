@@ -1075,6 +1075,9 @@ function initWhiteboard() {
 async function loadWhiteboardConfig(wid) {
     try {
         const response = await fetch(`/api/whiteboard/${wid}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const config = await response.json();
         console.log('Whiteboard config loaded:', config);
 
@@ -1082,6 +1085,19 @@ async function loadWhiteboardConfig(wid) {
         initializeWhiteboard(config);
     } catch (error) {
         console.error('Failed to load whiteboard configuration:', error);
+        // Initialize with default config if loading fails
+        const defaultConfig = {
+            elements: [],
+            background: '#ffffff',
+            settings: {
+                readOnly: false,
+                displayInfo: false,
+                showSmallestScreenIndicator: true,
+                imageDownloadFormat: 'png',
+                drawBackgroundGrid: false
+            }
+        };
+        initializeWhiteboard(defaultConfig);
     }
 }
 
